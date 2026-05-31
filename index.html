@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Routine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0c0c0d;
+  --surface: #141415;
+  --border: #222225;
+  --text: #dedad4;
+  --muted: #555558;
+  --accent: #c8a96e;
+  --teal: #6eb8a0;
+  --red: #c87a6e;
+  --serif: 'DM Serif Display', Georgia, serif;
+  --mono: 'DM Mono', 'Courier New', monospace;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 32px 20px;
+  gap: 0;
+}
+
+/* MODE SELECTOR */
+.mode-bar {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 48px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 3px;
+}
+
+.mode-btn {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 7px 20px;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.mode-btn.active {
+  background: var(--border);
+  color: var(--text);
+}
+.mode-btn:hover:not(.active) { color: var(--text); }
+
+/* PANELS */
+.panel { display: none; width: 100%; max-width: 480px; flex-direction: column; align-items: center; }
+.panel.active { display: flex; }
+
+/* TITLE */
+.panel-title {
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 40px;
+  letter-spacing: 0.5px;
+}
+
+/* BIG TIMER DISPLAY */
+.timer-face {
+  font-family: var(--serif);
+  font-size: 88px;
+  color: var(--accent);
+  letter-spacing: -4px;
+  line-height: 1;
+  text-align: center;
+  transition: color 0.4s;
+  margin-bottom: 10px;
+}
+.timer-face.urgent { color: var(--red); }
+.timer-face.done { color: var(--teal); }
+
+/* STEP LABEL */
+.step-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  text-align: center;
+  min-height: 16px;
+  margin-bottom: 32px;
+  transition: color 0.3s;
+}
+.step-label.active-step { color: var(--accent); }
+
+/* PROGRESS DOTS */
+.step-dots {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 36px;
+}
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: all 0.3s;
+}
+.dot.done { background: var(--muted); }
+.dot.current { background: var(--accent); transform: scale(1.4); }
+
+/* STEP DESCRIPTIONS */
+.step-desc-wrap {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 16px 18px;
+  margin-bottom: 32px;
+  min-height: 64px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.step-num-badge {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--accent);
+  line-height: 1;
+  min-width: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.step-text { flex: 1; }
+.step-name {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+.step-body { color: var(--text); font-size: 12.5px; line-height: 1.65; }
+.step-dur { color: var(--muted); font-size: 10.5px; margin-top: 4px; }
+
+/* PROGRESS BAR */
+.progress-track {
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  border-radius: 1px;
+  margin-bottom: 32px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 1px;
+  transition: width 1s linear, background 0.4s;
+  width: 100%;
+}
+
+/* BUTTONS */
+.btn-row { display: flex; gap: 10px; }
+
+.btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 10px 28px;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  background: transparent;
+  color: var(--text);
+  transition: all 0.15s;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.primary {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  font-weight: 400;
+}
+.btn.primary:hover { opacity: 0.88; }
+
+/* ── BREATH PANEL ────────────────────────────────────────── */
+.breath-ring-wrap {
+  position: relative;
+  width: 180px; height: 180px;
+  margin-bottom: 32px;
+}
+.breath-ring-wrap svg { position: absolute; inset: 0; }
+.breath-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px;
+}
+.breath-phase-lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+}
+.breath-count-big {
+  font-family: var(--serif);
+  font-size: 48px;
+  color: var(--accent);
+  line-height: 1;
+  transition: color 0.6s;
+}
+.breath-count-big.hold { color: var(--text); }
+.breath-count-big.exhale { color: var(--teal); }
+
+.breath-cycles {
+  display: flex; gap: 8px;
+  margin-bottom: 32px;
+}
+.cycle-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  transition: all 0.4s;
+}
+.cycle-dot.done { background: var(--teal); border-color: var(--teal); }
+.cycle-dot.current { border-color: var(--accent); background: transparent; box-shadow: 0 0 0 2px rgba(200,169,110,0.2); }
+
+.breath-instruction {
+  font-size: 11.5px;
+  color: var(--muted);
+  text-align: center;
+  max-width: 320px;
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+/* DONE STATE */
+.done-message {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--teal);
+  text-align: center;
+  margin-bottom: 16px;
+}
+.done-sub {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+</style>
+</head>
+<body>
+
+<div class="mode-bar">
+  <button class="mode-btn active" onclick="switchMode('reset')">Reset 7 min</button>
+  <button class="mode-btn" onclick="switchMode('breath')">4 · 7 · 8</button>
+</div>
+
+<!-- PANEL : RESET 7 MIN -->
+<div class="panel active" id="panel-reset">
+
+  <div class="panel-title">Reset des 7 minutes</div>
+
+  <div class="timer-face" id="rTimerFace">7:00</div>
+  <div class="step-label" id="rStepLabel">Prêt à démarrer</div>
+
+  <div class="step-dots" id="rDots">
+    <div class="dot" id="rdot-0"></div>
+    <div class="dot" id="rdot-1"></div>
+    <div class="dot" id="rdot-2"></div>
+    <div class="dot" id="rdot-3"></div>
+  </div>
+
+  <div class="step-desc-wrap" id="rStepCard">
+    <div class="step-num-badge">1</div>
+    <div class="step-text">
+      <div class="step-name">Visualisation</div>
+      <div class="step-body">Yeux fermés. Vois la version de toi que tu construis : comment elle marche, décide, travaille.</div>
+      <div class="step-dur">2 minutes</div>
+    </div>
+  </div>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="rProgressFill"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn primary" id="rMainBtn" onclick="rAction()">Démarrer</button>
+    <button class="btn" onclick="rReset()">Réinitialiser</button>
+  </div>
+
+</div>
+
+<!-- PANEL : RESPIRATION 4-7-8 -->
+<div class="panel" id="panel-breath">
+
+  <div class="panel-title">Protocole 4 · 7 · 8</div>
+
+  <div class="breath-ring-wrap">
+    <svg viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="90" cy="90" r="80" stroke="#222225" stroke-width="1.5"/>
+      <circle cx="90" cy="90" r="80" id="bRing"
+        stroke="#c8a96e" stroke-width="2"
+        stroke-dasharray="502.65" stroke-dashoffset="502.65"
+        stroke-linecap="round"
+        transform="rotate(-90 90 90)"
+        style="transition: stroke-dashoffset 1s linear, stroke 0.6s;"/>
+    </svg>
+    <div class="breath-center">
+      <div class="breath-phase-lbl" id="bPhaseLbl">Prêt</div>
+      <div class="breath-count-big" id="bCount">—</div>
+    </div>
+  </div>
+
+  <div class="breath-cycles" id="bCycles">
+    <div class="cycle-dot" id="bcyc-0"></div>
+    <div class="cycle-dot" id="bcyc-1"></div>
+    <div class="cycle-dot" id="bcyc-2"></div>
+    <div class="cycle-dot" id="bcyc-3"></div>
+  </div>
+
+  <div class="breath-instruction" id="bInstruction">
+    4 cycles · environ 2 minutes<br>
+    Réduit le cortisol de 25 % · réactive le cortex préfrontal
+  </div>
+
+  <div class="btn-row">
+    <button class="btn primary" id="bMainBtn" onclick="bAction()">Démarrer</button>
+    <button class="btn" onclick="bReset()">Stop</button>
+  </div>
+
+</div>
+
+<script>
+// ── MODE ──────────────────────────────────────────────────────────────────────
+function switchMode(m) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + m).classList.add('active');
+  document.querySelector(`.mode-btn[onclick="switchMode('${m}')"]`).classList.add('active');
+}
+
+// ── RESET 7 MIN ───────────────────────────────────────────────────────────────
+const RSTEPS = [
+  { num: 1, name: 'Visualisation', body: 'Yeux fermés. Vois la version de toi que tu construis\u00a0: comment elle marche, décide, travaille. Ressens-la.', dur: '2 minutes', secs: 120 },
+  { num: 2, name: 'Action minimale', body: 'Une action ridiculement petite qui prouve que tu es déjà cette personne. Une phrase. 5 pompes. Concret et immédiat.', dur: '2 minutes', secs: 120 },
+  { num: 3, name: 'Verbalisation', body: 'À voix haute\u00a0: «\u00a0Aujourd\'hui, je suis [identité] et je vais le prouver en faisant [action spécifique].\u00a0»', dur: '2 minutes', secs: 120 },
+  { num: 4, name: 'Gratitude anticipée', body: 'Yeux fermés. Imagine la fin de journée où tu as tenu. Ressens la fierté, le calme. Remercie ton toi futur.', dur: '1 minute', secs: 60 },
+];
+const R_TOTAL = RSTEPS.reduce((s, x) => s + x.secs, 0);
+
+let rInterval = null, rRunning = false, rPaused = false, rElapsed = 0, rCurrentStep = 0;
+
+function rAction() {
+  if (!rRunning && !rPaused) { rStart(); return; }
+  if (rRunning) { rPause(); return; }
+  rResume();
+}
+
+function rStart() {
+  rRunning = true; rPaused = false; rElapsed = 0; rCurrentStep = 0;
+  document.getElementById('rMainBtn').textContent = 'Pause';
+  rShowStep(0);
+  rInterval = setInterval(rTick, 1000);
+}
+
+function rPause() {
+  rRunning = false; rPaused = true;
+  clearInterval(rInterval);
+  document.getElementById('rMainBtn').textContent = 'Reprendre';
+}
+
+function rResume() {
+  rRunning = true; rPaused = false;
+  document.getElementById('rMainBtn').textContent = 'Pause';
+  rInterval = setInterval(rTick, 1000);
+}
+
+function rReset() {
+  clearInterval(rInterval);
+  rRunning = false; rPaused = false; rElapsed = 0; rCurrentStep = 0;
+  const face = document.getElementById('rTimerFace');
+  face.textContent = '7:00'; face.className = 'timer-face';
+  document.getElementById('rStepLabel').textContent = 'Prêt à démarrer';
+  document.getElementById('rStepLabel').className = 'step-label';
+  document.getElementById('rProgressFill').style.width = '100%';
+  document.getElementById('rMainBtn').textContent = 'Démarrer';
+  RSTEPS.forEach((_, i) => { document.getElementById('rdot-' + i).className = 'dot'; });
+  rShowStep(0);
+}
+
+function rTick() {
+  rElapsed++;
+  const remaining = R_TOTAL - rElapsed;
+  if (remaining <= 0) {
+    clearInterval(rInterval); rRunning = false;
+    const face = document.getElementById('rTimerFace');
+    face.textContent = '0:00'; face.className = 'timer-face done';
+    document.getElementById('rStepLabel').textContent = 'Terminé';
+    document.getElementById('rProgressFill').style.width = '0%';
+    document.getElementById('rMainBtn').textContent = 'Refaire';
+    rRunning = false; rPaused = false;
+    setTimeout(() => { document.getElementById('rMainBtn').onclick = () => { rElapsed = 0; rPaused = false; rReset(); }; }, 0);
+    RSTEPS.forEach((_, i) => { document.getElementById('rdot-' + i).className = 'dot done'; });
+    return;
+  }
+  const m = Math.floor(remaining / 60), s = remaining % 60;
+  const face = document.getElementById('rTimerFace');
+  face.textContent = m + ':' + String(s).padStart(2, '0');
+  face.className = 'timer-face' + (remaining <= 30 ? ' urgent' : '');
+  document.getElementById('rProgressFill').style.width = (remaining / R_TOTAL * 100) + '%';
+  if (remaining <= 30) document.getElementById('rProgressFill').style.background = 'var(--red)';
+
+  let stepStart = 0;
+  for (let i = 0; i < RSTEPS.length; i++) {
+    if (rElapsed <= stepStart + RSTEPS[i].secs) {
+      if (i !== rCurrentStep) { rCurrentStep = i; rShowStep(i); }
+      break;
+    }
+    stepStart += RSTEPS[i].secs;
+  }
+}
+
+function rShowStep(i) {
+  const s = RSTEPS[i];
+  const card = document.getElementById('rStepCard');
+  card.innerHTML = `<div class="step-num-badge">${s.num}</div><div class="step-text"><div class="step-name">${s.name}</div><div class="step-body">${s.body}</div><div class="step-dur">${s.dur}</div></div>`;
+  const lbl = document.getElementById('rStepLabel');
+  lbl.textContent = s.name;
+  lbl.className = 'step-label active-step';
+  RSTEPS.forEach((_, j) => {
+    const dot = document.getElementById('rdot-' + j);
+    dot.className = 'dot' + (j < i ? ' done' : j === i ? ' current' : '');
+  });
+}
+
+// ── RESPIRATION 4-7-8 ─────────────────────────────────────────────────────────
+const BPHASES = [
+  { name: 'Inspire', secs: 4, cls: '', ringColor: '#6eb8a0' },
+  { name: 'Bloque', secs: 7, cls: 'hold', ringColor: '#c8a96e' },
+  { name: 'Expire', secs: 8, cls: 'exhale', ringColor: '#a8c8b8' },
+];
+const CIRC = 2 * Math.PI * 80;
+
+let bInterval = null, bRunning = false, bCycle = 0, bPhaseIdx = 0, bCount = 0, bPhaseTotalSecs = 0;
+
+function bAction() {
+  if (bRunning) { bReset(); return; }
+  bRunning = true; bCycle = 0; bPhaseIdx = 0;
+  document.getElementById('bMainBtn').textContent = 'Stop';
+  bInstruction('');
+  bRunPhase();
+}
+
+function bRunPhase() {
+  if (!bRunning) return;
+  const phase = BPHASES[bPhaseIdx];
+  bCount = phase.secs; bPhaseTotalSecs = phase.secs;
+  document.getElementById('bPhaseLbl').textContent = phase.name;
+  const cntEl = document.getElementById('bCount');
+  cntEl.textContent = bCount; cntEl.className = 'breath-count-big ' + phase.cls;
+  updateRing(bCount, bPhaseTotalSecs, phase.ringColor);
+  updateCycles();
+  bInterval = setInterval(() => {
+    bCount--;
+    document.getElementById('bCount').textContent = bCount;
+    updateRing(bCount, bPhaseTotalSecs, phase.ringColor);
+    if (bCount <= 0) {
+      clearInterval(bInterval);
+      bPhaseIdx++;
+      if (bPhaseIdx >= BPHASES.length) { bPhaseIdx = 0; bCycle++; }
+      if (bCycle >= 4) { bDone(); return; }
+      setTimeout(bRunPhase, 300);
+    }
+  }, 1000);
+}
+
+function updateRing(remaining, total, color) {
+  const ring = document.getElementById('bRing');
+  const pct = remaining / total;
+  ring.style.strokeDashoffset = CIRC * (1 - pct);
+  ring.style.stroke = color;
+}
+
+function updateCycles() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('bcyc-' + i);
+    dot.className = 'cycle-dot' + (i < bCycle ? ' done' : i === bCycle ? ' current' : '');
+  }
+}
+
+function bDone() {
+  bRunning = false;
+  clearInterval(bInterval);
+  document.getElementById('bPhaseLbl').textContent = 'Terminé';
+  document.getElementById('bCount').textContent = '✓';
+  document.getElementById('bCount').className = 'breath-count-big exhale';
+  document.getElementById('bMainBtn').textContent = 'Refaire';
+  for (let i = 0; i < 4; i++) document.getElementById('bcyc-' + i).className = 'cycle-dot done';
+  const ring = document.getElementById('bRing');
+  ring.style.strokeDashoffset = '0'; ring.style.stroke = '#6eb8a0';
+  bInstruction('Cortisol réduit. Cortex préfrontal réactivé.');
+}
+
+function bReset() {
+  clearInterval(bInterval);
+  bRunning = false; bCycle = 0; bPhaseIdx = 0; bCount = 0;
+  document.getElementById('bPhaseLbl').textContent = 'Prêt';
+  document.getElementById('bCount').textContent = '—';
+  document.getElementById('bCount').className = 'breath-count-big';
+  document.getElementById('bMainBtn').textContent = 'Démarrer';
+  const ring = document.getElementById('bRing');
+  ring.style.strokeDashoffset = CIRC; ring.style.stroke = '#c8a96e';
+  for (let i = 0; i < 4; i++) document.getElementById('bcyc-' + i).className = 'cycle-dot';
+  bInstruction('4 cycles · environ 2 minutes\nRéduit le cortisol de 25\u00a0% · réactive le cortex préfrontal');
+}
+
+function bInstruction(txt) {
+  const el = document.getElementById('bInstruction');
+  el.style.opacity = txt ? '0' : '1';
+  setTimeout(() => { el.textContent = txt; el.style.opacity = '1'; }, txt ? 200 : 0);
+}
+</script>
+</body>
+</html>
